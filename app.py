@@ -1,92 +1,105 @@
 import os
 import streamlit as st
 
-# Page Configuration
 st.set_page_config(page_title="Secret Santa 🎁", page_icon="🎁", layout="centered")
 
-# Secret Santa Assignments
+# Freshly Shuffled Assignments
 assignments = {
-    "Kylee-Ann": "Ohenewaa",
-    "Mitchelle": "Fynn",
-    "Ainoo-Brey": "Awo Doe",
-    "Ama Osaa": "Gifty",
-    "Firdaus": "Laurena",
-    "Owusuah": "Phylix",
-    "Maame Korkor": "Nana Yaa",
-    "Nana Afia": "Nelly",
-    "Akosua Offei": "Louisa",
-    "Phylix": "Firdaus",
-    "Laurena": "Maame Araba",
-    "Lucky": "Deborah",
-    "Maame Araba": "Afia",
-    "Jessie": "Owusuah",
-    "Awo Doe": "Ora",
-    "Yvonne": "Aatifah",
-    "Ora": "Hadile",
-    "Angela": "Lucky",
-    "Akua": "Angela",
-    "Sabina": "Grace",
-    "Pamela": "Oheneba",
-    "Nana Yaa": "Yvonne",
-    "Hadile": "Akua",
-    "Mary": "Akosua Offei",
+    "Afia": "Owusuah",
+    "Aatifah": "Sabina",
+    "Ainoo Brey": "Benedicta",
+    "Akosua Offei": "Firdaus",
+    "Akua": "Fynn",
+    "Ama Osaa": "Kylee Ann",
+    "Angela": "Maame Araba",
+    "Awo Doe": "Ohenewaa",
+    "Benedicta": "Pamela",
+    "Deborah": "Sofia",
+    "Diana": "Akosua Offei",
+    "Esther Doe": "Mary",
+    "Firdaus": "Aatifah",
+    "Fynn": "Jessica",
+    "Gifty": "Diana",
+    "Grace": "Lucky",
+    "Hadile": "Louisa",
+    "Jessica": "Gifty",
+    "Jessie": "Esther Doe",
+    "Kylee Ann": "Maame Korkor",
+    "Laurena": "Ummul",
+    "Louisa": "Nelly",
+    "Lucky": "Angela",
+    "Maame Araba": "Grace",
+    "Maame Korkor": "Hadile",
+    "Mary": "Ama Osaa",
     "Michelle": "Ainoo Brey",
-    "Ummul": "Nana Afia",
-    "Diana": "Mitchelle",
-    "Aatifah": "Ummul",
-    "Nana Ama": "Pamela",
-    "Nelly": "Michelle",
-    "Grace": "Ama Osaa",
-    "Louisa": "Jessie",
-    "Afia": "Jessica",
-    "Gifty": "Maame Korkor",
-    "Jessica": "Nana Ama",
-    "Fynn": "Mary",
-    "Oheneba": "Sabina",
-    "Esther Doe": "Diana",
-    "Deborah": "Kylee Ann",
-    "Ohenewaa": "Stephanie",
-    "Sofia": "Esther Doe",
-    "Benedicta": "Sofia",
-    "Stephanie": "Benedicta"
+    "Mitchelle": "Nana Ama",
+    "Nana Afia": "Mitchelle",
+    "Nana Ama": "Stephanie",
+    "Nana Yaa": "Jessie",
+    "Nelly": "Oheneba",
+    "Oheneba": "Nana Yaa",
+    "Ohenewaa": "Laurena",
+    "Ora": "Akua",
+    "Owusuah": "Phylix",
+    "Pamela": "Deborah",
+    "Phylix": "Nana Afia",
+    "Sabina": "Michelle",
+    "Sofia": "Ora",
+    "Stephanie": "Afia",
+    "Ummul": "Awo Doe"
 }
 
 USED_FILE = "used_names.txt"
 
-# Helper function to get used names
 def get_used_names():
     if os.path.exists(USED_FILE):
         with open(USED_FILE, "r") as f:
             return set(line.strip() for line in f)
     return set()
 
-# Helper function to mark a name as used
 def mark_name_as_used(name):
     with open(USED_FILE, "a") as f:
         f.write(name + "\n")
 
-# App Header
+if "revealed_in_session" not in st.session_state:
+    st.session_state["revealed_in_session"] = False
+
 st.title("🎁 Secret Santa Reveal")
-st.write("Select your name from the list below to reveal who you are giving a gift to!")
+
+# Admin Reset Panel
+with st.expander("🔑 Admin Options (Reset List)"):
+    admin_pass = st.text_input("Enter Admin Password to Reset:", type="password")
+    if admin_pass == "santa2026":
+        if st.button("Reset All Used Names"):
+            if os.path.exists(USED_FILE):
+                os.remove(USED_FILE)
+            st.session_state["revealed_in_session"] = False
+            st.success("All names reset! Everyone can view their match again.")
+            st.rerun()
+
+st.write("Select your name below to reveal your match.")
 
 used_names = get_used_names()
-
-# Name Dropdown
 names_list = ["-- Select your name --"] + sorted(list(assignments.keys()))
 selected_name = st.selectbox("Your Name:", names_list)
 
 if selected_name != "-- Select your name --":
     st.divider()
     
-    if selected_name in used_names:
-        st.error("⚠️ This name has already viewed their Secret Santa assignment.")
-        st.info("If you forgot your recipient, please contact the organizer!")
+    if st.session_state["revealed_in_session"]:
+        st.error("🛑 You have already revealed a match during this session!")
+        st.info("Please close this browser tab before letting someone else use this device.")
+    
+    elif selected_name in used_names:
+        st.error("⚠️ This name has already been viewed.")
+        st.info("If you forgot who you got, ask the organizer to check or reset.")
+    
     else:
-        # Show result button to prevent accidental reveals
-        if st.button("✨ Click to Reveal My Secret Santa"):
+        if st.button("✨ Reveal My Match"):
             recipient = assignments[selected_name]
             mark_name_as_used(selected_name)
+            st.session_state["revealed_in_session"] = True
             
             st.success(f"🎄 You are Secret Santa for: **{recipient}**")
-            st.warning("🔒 Please close this page after viewing so no one else sees your match!")
-    
+            st.warning("🔒 Please close this page now so no one else sees your match!")
+                 
