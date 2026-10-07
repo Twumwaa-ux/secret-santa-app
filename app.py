@@ -6,9 +6,9 @@ st.set_page_config(page_title="Secret Santa 🎁", page_icon="🎁", layout="cen
 
 # Secret Santa Assignments
 assignments = {
-    "Kylee Ann": "Ohenewaa",
+    "Kylee-Ann": "Ohenewaa",
     "Mitchelle": "Fynn",
-    "Ainoo Brey": "Awo Doe",
+    "Ainoo-Brey": "Awo Doe",
     "Ama Osaa": "Gifty",
     "Firdaus": "Laurena",
     "Owusuah": "Phylix",
